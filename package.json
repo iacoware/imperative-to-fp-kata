@@ -7,7 +7,7 @@
   },
   "type": "module",
   "scripts": {
-    "go": "tsx src/images-go.ts",
+    "go": "tsx src/index.ts",
     "build": "npm run clean && tsc",
     "clean": "rimraf .build .coverage",
     "typecheck": "tsc --noemit",
