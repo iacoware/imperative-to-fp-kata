@@ -1,7 +1,7 @@
 import { mkdirSync, readdirSync, writeFileSync } from "fs"
 import * as path from "path"
 import sharp from "sharp"
-import { pick } from "../src/common/object"
+import { pick } from "./common/object"
 import { imageTypesRegex } from "./index"
 
 export async function main(
