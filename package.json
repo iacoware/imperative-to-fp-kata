@@ -18,6 +18,9 @@
     "test": "vitest",
     "freshstart": "rimraf .git && git init && git add -A && git commit -m 'Initial commit'"
   },
+  "dependencies": {
+    "effect": "2.4.0"
+  },
   "devDependencies": {
     "@types/node": "18.15.3",
     "typescript": "5.3.3",
