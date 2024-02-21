@@ -3,12 +3,16 @@
   // Options Reference https://www.typescriptlang.org/tsconfig
   "compilerOptions": {
     // lang & env
-    "target": "ES2021",
-    "lib": ["ES2021"],
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+//    "target": "ES2021",
+//    "lib": ["ES2021"],
+    "lib": ["ESNext"],
 
     // modules
-    "module": "commonjs",
-    "moduleResolution": "node",
+//    "module": "commonjs",
+//    "moduleResolution": "node",
 
     // type checking
     "strict": true,

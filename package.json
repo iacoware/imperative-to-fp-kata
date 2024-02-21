@@ -5,8 +5,9 @@
   "engines": {
     "node": ">=18"
   },
+  "type": "module",
   "scripts": {
-    "cli": "tsx index.ts",
+    "go": "tsx src/images-go.ts",
     "build": "npm run clean && tsc",
     "clean": "rimraf .build .coverage",
     "typecheck": "tsc --noemit",
@@ -26,6 +27,7 @@
     "@typescript-eslint/parser": "7.0.2",
     "prettier": "3.2.5",
     "rimraf": "5.0.5",
+    "sharp": "0.33.2",
     "tsx": "4.7.1",
     "vitest": "1.3.1"
   },
