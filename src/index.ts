@@ -13,6 +13,22 @@ const processedDirAbsolute = path.join(sourceDirAbsolute, compressOutputDir)
 const finalImageSrcBaseUrl = `/team-photos/${compressOutputDir}`
 const jsonOutputFile = "images.json"
 
+const app2 = Effect.gen(function* (_) {
+    yield* _(
+        Effect.promise(() => compress(sourceDirAbsolute, compressOutputDir)),
+    )
+
+    yield* _(
+        Effect.promise(() =>
+            writeJson(
+                processedDirAbsolute,
+                jsonOutputFile,
+                finalImageSrcBaseUrl,
+            ),
+        ),
+    )
+})
+
 const app = F.pipe(
     Effect.promise(() => compress(sourceDirAbsolute, compressOutputDir)),
     Effect.flatMap(() =>
@@ -26,4 +42,5 @@ const app = F.pipe(
     ),
 )
 
-await Effect.runPromise(app)
+await Effect.runPromise(app2)
+// await Effect.runPromise(app)
