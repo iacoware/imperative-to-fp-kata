@@ -9,33 +9,41 @@ import {
 import * as path from "path"
 import sharp from "sharp"
 import { imageTypesRegex } from "./index"
-import { Effect } from "effect"
+import { Data, Effect } from "effect"
 import { FileSystem } from "@effect/platform"
 
 const WIDTH_THRESHOLD = 1500
 
-export class CompressError {
-    readonly _tag = "CompressError"
-}
+export class CompressError extends Data.TaggedError("CompressError")<{
+    message: string
+}> {}
 
 export function compress(sourceDir: string, outputDir: string) {
     return Effect.gen(function* (_) {
         const fs = yield* _(FileSystem.FileSystem)
 
+        const sourceDirExists = yield* _(fs.exists(sourceDir))
+        if (!sourceDirExists) {
+            const message = `Source directory ${sourceDir} does not exist`
+            console.error(`\n${message}\n`)
+            yield* _(new CompressError({ message }))
+        }
+
         yield* _(
             Effect.tryPromise({
                 try: () => main(sourceDir, outputDir),
-                catch: () => new CompressError(),
+                catch: () =>
+                    new CompressError({ message: "Generic compress error" }),
             }),
         )
     })
 }
 
 export async function main(sourceDir: string, outputDir: string) {
-    if (!existsSync(sourceDir)) {
-        console.error(`\nSource directory ${sourceDir} does not exist\n`)
-        process.exit(1)
-    }
+    // if (!existsSync(sourceDir)) {
+    //     console.error(`\nSource directory ${sourceDir} does not exist\n`)
+    //     process.exit(1)
+    // }
 
     console.log(`\nReading images from ${sourceDir}\n`)
 

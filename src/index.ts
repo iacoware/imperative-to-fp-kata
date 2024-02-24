@@ -1,9 +1,10 @@
 import { compress } from "./images-compress"
-import { writeJson, WriteJsonError } from "./images-json"
+import { writeJson } from "./images-json"
 import * as path from "path"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import { Console } from "effect"
+import { NodeContext, NodeFileSystem } from "@effect/platform-node"
 
 export const imageTypesRegex = /\.(png|jpeg|jpg|webp)$/i
 const sourceDirRelative = "./public/team-photos"
@@ -33,4 +34,6 @@ const program = pipe(
     Effect.catchAll(() => Effect.sync(() => process.exit(1))),
 )
 
-await Effect.runPromise(program)
+const runnable = pipe(program, Effect.provide(NodeFileSystem.layer))
+
+await Effect.runPromise(runnable)
