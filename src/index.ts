@@ -1,4 +1,4 @@
-import { main as compress } from "./images-compress"
+import { CompressError, main as compress } from "./images-compress"
 import { main as writeJson } from "./images-json"
 import * as path from "path"
 import * as Effect from "effect/Effect"
@@ -14,17 +14,11 @@ const processedDirAbsolute = path.join(sourceDirAbsolute, compressOutputDir)
 const finalImageSrcBaseUrl = `/team-photos/${compressOutputDir}`
 const jsonOutputFile = "images.json"
 
-class CompressError {
-    readonly _tag = "CompressError"
-}
-class WriteJsonError {
+export class WriteJsonError {
     readonly _tag = "WriteJsonError"
 }
 
 const app = Effect.gen(function* (_) {
-    console.log("jsonOutputFile", jsonOutputFile)
-    console.log("final images src", finalImageSrcBaseUrl)
-
     yield* _(
         Effect.tryPromise({
             try: () => compress(sourceDirAbsolute, compressOutputDir),

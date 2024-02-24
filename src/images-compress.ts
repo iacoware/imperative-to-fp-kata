@@ -9,8 +9,24 @@ import {
 import * as path from "path"
 import sharp from "sharp"
 import { imageTypesRegex } from "./index"
+import { Effect } from "effect"
 
 const WIDTH_THRESHOLD = 1500
+
+export class CompressError {
+    readonly _tag = "CompressError"
+}
+
+export function compress(sourceDir: string, outputDir: string) {
+    return Effect.gen(function* (_) {
+        yield* _(
+            Effect.tryPromise({
+                try: () => main(sourceDir, outputDir),
+                catch: () => new CompressError(),
+            }),
+        )
+    })
+}
 
 export async function main(sourceDir: string, outputDir: string) {
     if (!existsSync(sourceDir)) {
