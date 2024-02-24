@@ -3,6 +3,26 @@ import * as path from "path"
 import sharp from "sharp"
 import { pick } from "./common/object"
 import { imageTypesRegex } from "./index"
+import { Effect } from "effect"
+
+export class WriteJsonError {
+    readonly _tag = "WriteJsonError"
+}
+
+export function writeJson(
+    sourceDir: string,
+    outputFile: string,
+    finalImageSrcBaseUrl: string,
+) {
+    return Effect.gen(function* (_) {
+        yield* _(
+            Effect.tryPromise({
+                try: () => main(sourceDir, outputFile, finalImageSrcBaseUrl),
+                catch: () => new WriteJsonError(),
+            }),
+        )
+    })
+}
 
 export async function main(
     sourceDir: string,
