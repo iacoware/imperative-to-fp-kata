@@ -2,7 +2,8 @@ import { main as compress } from "./images-compress"
 import { main as writeJson } from "./images-json"
 import * as path from "path"
 import * as Effect from "effect/Effect"
-import * as F from "effect/Function"
+import { pipe } from "effect/Function"
+import { Console } from "effect"
 
 export const imageTypesRegex = /\.(png|jpeg|jpg|webp)$/i
 const sourceDirRelative = "./public/team-photos"
@@ -13,34 +14,46 @@ const processedDirAbsolute = path.join(sourceDirAbsolute, compressOutputDir)
 const finalImageSrcBaseUrl = `/team-photos/${compressOutputDir}`
 const jsonOutputFile = "images.json"
 
-const app2 = Effect.gen(function* (_) {
+class CompressError {
+    readonly _tag = "CompressError"
+}
+class WriteJsonError {
+    readonly _tag = "WriteJsonError"
+}
+
+const app = Effect.gen(function* (_) {
+    console.log("jsonOutputFile", jsonOutputFile)
+    console.log("final images src", finalImageSrcBaseUrl)
+
     yield* _(
-        Effect.promise(() => compress(sourceDirAbsolute, compressOutputDir)),
+        Effect.tryPromise({
+            try: () => compress(sourceDirAbsolute, compressOutputDir),
+            catch: () => new CompressError(),
+        }),
     )
 
     yield* _(
-        Effect.promise(() =>
-            writeJson(
-                processedDirAbsolute,
-                jsonOutputFile,
-                finalImageSrcBaseUrl,
-            ),
-        ),
+        Effect.tryPromise({
+            try: () =>
+                writeJson(
+                    processedDirAbsolute,
+                    jsonOutputFile,
+                    finalImageSrcBaseUrl,
+                ),
+            catch: () => new WriteJsonError(),
+        }),
     )
 })
 
-const app = F.pipe(
-    Effect.promise(() => compress(sourceDirAbsolute, compressOutputDir)),
-    Effect.flatMap(() =>
-        Effect.promise(() =>
-            writeJson(
-                processedDirAbsolute,
-                jsonOutputFile,
-                finalImageSrcBaseUrl,
-            ),
-        ),
+const program = pipe(
+    app,
+    Effect.tapErrorTag("CompressError", () =>
+        Console.log("Failed to compress images"),
     ),
+    Effect.tapErrorTag("WriteJsonError", () =>
+        Console.log("Failed to write json"),
+    ),
+    Effect.catchAll(() => Effect.sync(() => process.exit(1))),
 )
 
-await Effect.runPromise(app2)
-// await Effect.runPromise(app)
+await Effect.runPromise(program)

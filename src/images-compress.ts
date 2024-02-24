@@ -32,6 +32,8 @@ export async function main(sourceDir: string, outputDir: string) {
         )
     const results = await Promise.all(tasks)
 
+    // throw new Error("WTF?")
+
     console.log(`\nProcessed ${results.length} images \n`)
     console.log(`\nDONE\n`)
 }
