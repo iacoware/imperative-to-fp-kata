@@ -10,6 +10,7 @@ import * as path from "path"
 import sharp from "sharp"
 import { imageTypesRegex } from "./index"
 import { Effect } from "effect"
+import { FileSystem } from "@effect/platform"
 
 const WIDTH_THRESHOLD = 1500
 
@@ -19,6 +20,8 @@ export class CompressError {
 
 export function compress(sourceDir: string, outputDir: string) {
     return Effect.gen(function* (_) {
+        const fs = yield* _(FileSystem.FileSystem)
+
         yield* _(
             Effect.tryPromise({
                 try: () => main(sourceDir, outputDir),
