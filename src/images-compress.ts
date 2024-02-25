@@ -12,6 +12,7 @@ import { imageTypesRegex } from "./index"
 import { Data, Effect } from "effect"
 import * as ROA from "effect/ReadonlyArray"
 import { FileSystem } from "@effect/platform"
+import { pipe } from "effect/Function"
 
 const WIDTH_THRESHOLD = 1500
 
@@ -39,9 +40,14 @@ export function compress(sourceDir: string, outputDir: string) {
 
         yield* _(fs.makeDirectory(outputDirAbsolute, { recursive: true }))
 
+        const onlyImages = yield* _(
+            fs.readDirectory(sourceDir),
+            Effect.map(ROA.filter((file) => !!file.match(imageTypesRegex))),
+        )
+
         yield* _(
             Effect.tryPromise({
-                try: () => main(sourceDir, outputDir),
+                try: () => main(sourceDir, outputDir, onlyImages),
                 catch: () =>
                     new CompressError({ message: "Generic compress error" }),
             }),
@@ -49,15 +55,16 @@ export function compress(sourceDir: string, outputDir: string) {
     })
 }
 
-export async function main(sourceDir: string, outputDir: string) {
+export async function main(
+    sourceDir: string,
+    outputDir: string,
+    onlyImages: string[],
+) {
     const outputDirAbsolute = path.join(sourceDir, outputDir)
 
-    const tasks = readdirSync(sourceDir)
-        // keep-line
-        .filter((file) => file.match(imageTypesRegex))
-        .map((file) =>
-            processOne(path.join(sourceDir, file), outputDirAbsolute),
-        )
+    const tasks = onlyImages.map((file) =>
+        processOne(path.join(sourceDir, file), outputDirAbsolute),
+    )
     const results = await Promise.all(tasks)
 
     // throw new Error("WTF?")
