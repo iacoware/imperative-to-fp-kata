@@ -10,6 +10,7 @@ import * as path from "path"
 import sharp from "sharp"
 import { imageTypesRegex } from "./index"
 import { Data, Effect } from "effect"
+import * as ROA from "effect/ReadonlyArray"
 import { FileSystem } from "@effect/platform"
 
 const WIDTH_THRESHOLD = 1500
@@ -29,6 +30,15 @@ export function compress(sourceDir: string, outputDir: string) {
             yield* _(new CompressError({ message }))
         }
 
+        console.log(`\nReading images from ${sourceDir}\n`)
+
+        const outputDirAbsolute = path.join(sourceDir, outputDir)
+        const outputDirExists = yield* _(fs.exists(outputDirAbsolute))
+        if (outputDirExists)
+            yield* _(fs.remove(outputDirAbsolute, { recursive: true }))
+
+        yield* _(fs.makeDirectory(outputDirAbsolute, { recursive: true }))
+
         yield* _(
             Effect.tryPromise({
                 try: () => main(sourceDir, outputDir),
@@ -40,16 +50,7 @@ export function compress(sourceDir: string, outputDir: string) {
 }
 
 export async function main(sourceDir: string, outputDir: string) {
-    // if (!existsSync(sourceDir)) {
-    //     console.error(`\nSource directory ${sourceDir} does not exist\n`)
-    //     process.exit(1)
-    // }
-
-    console.log(`\nReading images from ${sourceDir}\n`)
-
     const outputDirAbsolute = path.join(sourceDir, outputDir)
-    rmSync(outputDirAbsolute, { recursive: true, force: true })
-    mkdirSync(outputDirAbsolute, { recursive: true })
 
     const tasks = readdirSync(sourceDir)
         // keep-line
