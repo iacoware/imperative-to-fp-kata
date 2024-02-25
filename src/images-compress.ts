@@ -45,32 +45,32 @@ export function compress(sourceDir: string, outputDir: string) {
             Effect.map(ROA.filter((file) => !!file.match(imageTypesRegex))),
         )
 
-        yield* _(
-            Effect.tryPromise({
-                try: () => main(sourceDir, outputDir, onlyImages),
-                catch: () =>
-                    new CompressError({ message: "Generic compress error" }),
-            }),
+        const results = yield* _(
+            onlyImages,
+            Effect.forEach(
+                (file) =>
+                    processOneF(path.join(sourceDir, file), outputDirAbsolute),
+                { concurrency: "unbounded" },
+            ),
         )
+
+        console.log(`\nProcessed ${results.length} images \n`)
+        console.log(`\nDONE\n`)
     })
 }
 
-export async function main(
-    sourceDir: string,
-    outputDir: string,
-    onlyImages: string[],
-) {
-    const outputDirAbsolute = path.join(sourceDir, outputDir)
-
-    const tasks = onlyImages.map((file) =>
-        processOne(path.join(sourceDir, file), outputDirAbsolute),
-    )
-    const results = await Promise.all(tasks)
-
-    // throw new Error("WTF?")
-
-    console.log(`\nProcessed ${results.length} images \n`)
-    console.log(`\nDONE\n`)
+function processOneF(inputFile: string, outputDir: string) {
+    return Effect.gen(function* (_) {
+        yield* _(
+            Effect.tryPromise({
+                try: () => processOne(inputFile, outputDir),
+                catch: () =>
+                    new CompressError({
+                        message: `Error processing ${inputFile}`,
+                    }),
+            }),
+        )
+    })
 }
 
 async function processOne(inputFile: string, outputDir: string) {
